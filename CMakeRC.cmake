@@ -608,9 +608,20 @@ function(cmrc_add_resources name)
         # the intermediate directory.
         file(RELATIVE_PATH relpath "${ARG_WHENCE}" "${abs_in}")
         if(relpath MATCHES "^\\.\\.")
-            # For now we just error on files that exist outside of the soure dir.
-            message(SEND_ERROR "Cannot add file '${input}': File must be in a subdirectory of ${ARG_WHENCE}")
-            continue()
+            # If relative path contains whence, use it from there
+            get_filename_component(WhenceName ${ARG_WHENCE} NAME)
+            string(FIND ${relpath} ${WhenceName} relativeIndex)
+            if(relativeIndex EQUAL -1)
+                # Error on files that exist outside whence subdirectory
+                message(SEND_ERROR "Cannot add file '${input}': File must be in a subdirectory of ${ARG_WHENCE}")
+                continue()
+            else()
+                # Allow a file to get picked from build tree if its path contains whence
+                string(LENGTH ${WhenceName} whenceSize)
+                math(EXPR whenceIndex "${relativeIndex} + ${whenceSize} + 1")
+                string(SUBSTRING ${relpath} "${whenceIndex}" "-1" outpath)
+                set(relpath "./${outpath}")
+            endif()
         endif()
         if(DEFINED ARG_PREFIX)
             _cmrc_normalize_path(ARG_PREFIX)
