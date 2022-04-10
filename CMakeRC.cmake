@@ -415,17 +415,8 @@ inline std::pair<std::string, std::string> cmrc::detail::splitPath(const std::st
 
 inline std::string cmrc::detail::normalizePath(const std::string_view &path) noexcept
 {
-    std::string copy(path);
-    while (copy.find("/") == 0) {
-        copy.erase(copy.begin());
-    }
-    while (!copy.empty() && (copy.rfind("/") == copy.size() - 1)) {
-        copy.pop_back();
-    }
-    auto off = copy.npos;
-    while ((off = copy.find("//")) != copy.npos) {
-        copy.erase(copy.begin() + static_cast<std::string::difference_type>(off));
-    }
+    std::string copy("./");
+    copy += path;
     return copy;
 }
 ]==])
@@ -601,6 +592,7 @@ function(cmrc_add_resources name)
         return()
     endif()
 
+    get_filename_component(WhenceName ${ARG_WHENCE} NAME)
     foreach(input IN LISTS ARG_UNPARSED_ARGUMENTS)
         _cmrc_normalize_path(input)
         get_filename_component(abs_in "${input}" ABSOLUTE)
@@ -609,7 +601,6 @@ function(cmrc_add_resources name)
         file(RELATIVE_PATH relpath "${ARG_WHENCE}" "${abs_in}")
         if(relpath MATCHES "^\\.\\.")
             # If relative path contains whence, use it from there
-            get_filename_component(WhenceName ${ARG_WHENCE} NAME)
             string(FIND ${relpath} ${WhenceName} relativeIndex)
             if(relativeIndex EQUAL -1)
                 # Error on files that exist outside whence subdirectory
