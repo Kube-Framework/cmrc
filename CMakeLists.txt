@@ -3,6 +3,9 @@ project(CMakeRC VERSION 2.0.0)
 
 list(INSERT CMAKE_MODULE_PATH 0 "${PROJECT_SOURCE_DIR}/cmake")
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Include the main module
 include(CMakeRC.cmake)
 
