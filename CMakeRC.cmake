@@ -247,7 +247,7 @@ public:
     class iterator
     {
     public:
-        using base_iterator = std::map<std::string, file_or_directory>::const_iterator;
+        using base_iterator = std::map<std::string, file_or_directory, std::less<>>::const_iterator;
         using value_type = directory_entry;
         using difference_type = std::ptrdiff_t;
         using pointer = const value_type*;
@@ -339,7 +339,7 @@ namespace cmrc
     namespace detail
     {
         /** @brief Index of filesystem */
-        using index_type = std::map<std::string, const file_or_directory *>;
+        using index_type = std::map<std::string, const file_or_directory *, std::less<>>;
     }
 }
 
@@ -390,8 +390,7 @@ private:
     /** @brief Get entry */
     [[nodiscard]] const detail::file_or_directory* getEntry(const std::string_view &path) const noexcept
     {
-        const auto normalized = detail::normalizePath(path);
-        auto found = _index->find(normalized);
+        auto found = _index->find(path);
         if (found == _index->end()) {
             return nullptr;
         } else {
@@ -411,13 +410,6 @@ inline std::pair<std::string, std::string> cmrc::detail::splitPath(const std::st
     } else {
         return std::make_pair(std::string(path.substr(0, first_sep)), std::string(path.substr(first_sep + 1)));
     }
-}
-
-inline std::string cmrc::detail::normalizePath(const std::string_view &path) noexcept
-{
-    std::string copy("./");
-    copy += path;
-    return copy;
 }
 ]==])
 
@@ -611,7 +603,7 @@ function(cmrc_add_resources name)
                 string(LENGTH ${WhenceName} whenceSize)
                 math(EXPR whenceIndex "${relativeIndex} + ${whenceSize} + 1")
                 string(SUBSTRING ${relpath} "${whenceIndex}" "-1" outpath)
-                set(relpath "./${outpath}")
+                set(relpath "${outpath}")
             endif()
         endif()
         if(DEFINED ARG_PREFIX)
