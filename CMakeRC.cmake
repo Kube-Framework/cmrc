@@ -141,10 +141,10 @@ class cmrc::detail::file_or_directory
 {
 public:
     /** @brief File constructor */
-    explicit file_or_directory(const file_data &f) : _isFile(true) { _data.file_data = &f; }
+    explicit file_or_directory(const file_data &f) : _isFile(true) { _data.file = &f; }
 
     /** @brief Directory constructor */
-    explicit file_or_directory(const directory &d) : _isFile(false) { _data.directory = &d; }
+    explicit file_or_directory(const directory &d) : _isFile(false) { _data.dir = &d; }
 
 
     /** @brief Check if entry is a file */
@@ -158,21 +158,21 @@ public:
     [[nodiscard]] const directory &as_directory(void) const noexcept
     {
         assert(!is_file());
-        return *_data.directory;
+        return *_data.dir;
     }
 
     /** @brief Get underlying file */
     [[nodiscard]] const file_data &as_file(void) const noexcept
     {
         assert(is_file());
-        return *_data.file_data;
+        return *_data.file;
     }
 
 private:
     union _data_t
     {
-        const file_data *file_data;
-        const directory *directory;
+        const file_data *file;
+        const directory *dir;
     } _data;
     bool _isFile {};
 };
@@ -191,7 +191,7 @@ struct cmrc::detail::file_data
 
 struct cmrc::detail::created_subdirectory
 {
-    directory &directory;
+    directory &dir;
     file_or_directory &index_entry;
 };
 
