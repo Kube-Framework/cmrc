@@ -479,7 +479,7 @@ function(cmrc_add_resource_library name)
             static cmrc::detail::index_type root_index;
             root_index.emplace("", &root_directory_fod);
             struct dir_inl {
-                class cmrc::detail::directory& directory;
+                class cmrc::detail::directory& dir;
             };
             dir_inl root_directory_dir{root_directory_};
             (void)root_directory_dir;
@@ -550,7 +550,7 @@ function(_cmrc_register_dirs name dirpath)
     set_property(
         TARGET "${name}"
         APPEND PROPERTY CMRC_MAKE_DIRS
-        "static auto ${sym}_dir = ${parent_sym}_dir.directory.add_subdir(\"${leaf}\")\;"
+        "static auto ${sym}_dir = ${parent_sym}_dir.dir.add_subdir(\"${leaf}\")\;"
         "root_index.emplace(\"${dirpath}\", &${sym}_dir.index_entry)\;"
         )
 endfunction()
@@ -637,7 +637,7 @@ function(cmrc_add_resources name)
             APPEND PROPERTY CMRC_MAKE_FILES
             "root_index.emplace("
             "    \"${ARG_PREFIX}${relpath}\","
-            "    ${parent_sym}_dir.directory.add_file("
+            "    ${parent_sym}_dir.dir.add_file("
             "        \"${leaf}\","
             "        res_chars::${sym}_begin,"
             "        res_chars::${sym}_end"
