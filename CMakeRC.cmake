@@ -141,11 +141,10 @@ class cmrc::detail::file_or_directory
 {
 public:
     /** @brief File constructor */
-    explicit file_or_directory(const file_data &f) : _isFile(true) { _data.file = &f; }
+    explicit file_or_directory(const file_data &f) : _data(&f), _isFile(true) {}
 
     /** @brief Directory constructor */
-    explicit file_or_directory(const directory &d) : _isFile(false) { _data.dir = &d; }
-
+    explicit file_or_directory(const directory &d) : _data(&d), _isFile(false) {}
 
     /** @brief Check if entry is a file */
     [[nodiscard]] bool is_file(void) const noexcept { return _isFile; }
@@ -173,6 +172,9 @@ private:
     {
         const file_data *file;
         const directory *dir;
+
+        inline _data_t(const file_data *f) noexcept : file(f) {}
+        inline _data_t(const directory *d) noexcept : dir(d) {}
     } _data;
     bool _isFile {};
 };
@@ -201,8 +203,9 @@ public:
     /** @brief Default constructor */
     directory(void) noexcept = default;
 
-   /** @brief Deleted copy constructor */
+   /** @brief Directory is not copiable */
     directory(const directory &) noexcept = delete;
+    directory &operator=(const directory &other) noexcept = delete;
 
 
     /** @brief Add subdirectory */
@@ -273,7 +276,7 @@ public:
         [[nodiscard]] bool operator!=(const iterator& rhs) const noexcept { return !(*this == rhs); }
 
         /** @brief Postfix increment operator */
-        [[nodiscard]] iterator operator++(void) noexcept
+        [[nodiscard]] iterator operator++(int) noexcept
         {
             auto cp = *this;
             ++_from;
@@ -281,15 +284,15 @@ public:
         }
 
         /** @brief Prefix increment operator */
-        [[nodiscard]] iterator &operator++(int) noexcept
+        [[nodiscard]] iterator &operator++(void) noexcept
         {
             ++_from;
             return *this;
         }
 
     private:
-        base_iterator _from;
-        base_iterator _to;
+        base_iterator _from {};
+        base_iterator _to {};
     };
 
     using const_iterator = iterator;
@@ -299,9 +302,9 @@ public:
     [[nodiscard]] iterator end(void) const noexcept { return iterator(); }
 
 private:
-    std::list<file_data> _files;
-    std::list<directory> _dirs;
-    std::map<std::string, file_or_directory, std::less<>> _index;
+    std::list<file_data> _files {};
+    std::list<directory> _dirs {};
+    std::map<std::string, file_or_directory, std::less<>> _index {};
 };
 
 class cmrc::directory_entry
@@ -310,6 +313,12 @@ public:
     /** @brief Directory constructor */
     explicit directory_entry(const std::string_view &filename, const detail::file_or_directory &item) noexcept
         : _fname(filename), _item(&item) {}
+
+    /** @brief Copy constructor */
+    directory_entry(const directory_entry &other) noexcept = default;
+
+    /** @brief Copy assignment */
+    directory_entry &operator=(const directory_entry &other) noexcept = default;
 
     /** @brief Get file name */
     [[nodiscard]] std::string_view filename(void) const noexcept { return _fname; }
@@ -321,8 +330,8 @@ public:
     [[nodiscard]] bool is_directory(void) const noexcept { return _item->is_directory(); }
 
 private:
-    std::string _fname;
-    const detail::file_or_directory *_item;
+    std::string _fname {};
+    const detail::file_or_directory *_item {};
 };
 
 inline cmrc::detail::directory::iterator::value_type cmrc::detail::directory::iterator::operator*(void) const noexcept
